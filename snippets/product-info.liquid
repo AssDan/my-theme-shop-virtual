@@ -1,0 +1,959 @@
+{%- assign selected_variant = product.selected_or_first_available_variant -%}
+
+<div class="card {% if product.media.size > 0 %}card--collapsed{% endif %} {% if template.name == 'product' %}card--sticky{% endif %}">
+  {%- if section.settings.enable_image_zoom -%}
+    <div id="product-zoom-{{ section.id }}" class="product__zoom-wrapper"></div>
+  {%- endif -%}
+
+  <div class="card__section">
+    {% comment %}
+    ------------------------------------------------------------------------------
+    PRODUCT META
+    ------------------------------------------------------------------------------
+    {% endcomment %}
+
+    {%- if section.settings.show_share_buttons -%}
+      {%- capture share_buttons -%}
+        {%- assign share_url = shop.url | append: product.url -%}
+        {%- assign twitter_text = product.title | url_param_escape -%}
+        {%- assign pinterest_description = product.description | strip_html | truncatewords: 15 | url_param_escape -%}
+        {%- assign pinterest_image = product.featured_media | img_url: '1024x' | prepend: 'https:' -%}
+
+        <ul class="social-media__item-list list--unstyled">
+          <li class="social-media__item social-media__item--facebook">
+            <a href="https://www.facebook.com/sharer.php?u={{ share_url }}" target="_blank" rel="noopener" aria-label="{{ 'general.social.facebook_share' | t }}">{%- render 'icon', icon: 'facebook' -%}</a>
+          </li>
+
+          <li class="social-media__item social-media__item--pinterest">
+            <a href="https://pinterest.com/pin/create/button/?url={{ share_url }}{% if pinterest_image != blank %}&media={{ pinterest_image }}{% endif %}&description={{ pinterest_description }}" target="_blank" rel="noopener" aria-label="{{ 'general.social.pinterest_pin' | t }}">{%- render 'icon', icon: 'pinterest' -%}</a>
+          </li>
+
+          <li class="social-media__item social-media__item--twitter">
+            <a href="https://twitter.com/share?{% if twitter_text != blank %}text={{twitter_text}}&{% endif %}url={{ share_url }}" target="_blank" rel="noopener" aria-label="{{ 'general.social.twitter_tweet' | t }}">{%- render 'icon', icon: 'twitter' -%}</a>
+          </li>
+
+          <li class="social-media__item">
+            <a href="mailto:?&subject={{ product.title | escape }}&body={{ share_url }}" aria-label="{{ 'general.social.email_share' | t }}">{% render 'icon', icon: 'email' %}</a>
+          </li>
+        </ul>
+      {%- endcapture -%}
+    {%- endif -%}
+
+    
+    <div class="product-meta">
+      <!--{% assign random = product.id | plus: 123456789 | divided_by: 65 | modulo: 32768 | modulo: 21500 %}--> 
+          {% assign random = product.id | divided_by: 220022 | modulo: 21550 %}   
+
+          {%- if section.settings.mostrar_quantidadevendidos -%}
+
+      <span class="quantitysell" style="font-size: 16px;color: #b7b7b7;">Novo</span>
+      
+          {%- endif -%}
+    
+      {%- if template.name == 'product' and template != 'product.quick-view' -%}
+      <h1 class="product-meta__title heading h1">{{ product.title }} </span>
+      <!-- Start of Judge.me code --><div style='{{ jm_style }}' class='jdgm-widget jdgm-preview-badge' data-id='{{ product.id }}' data-auto-install='false'>{{ product.metafields.judgeme.badge }}</div><!-- End of Judge.me code -->
+      </h1>
+      {%- else -%}
+        <h3 class="product-meta__title heading h2">
+          <a href="{{ product.url }}">{{ product.title }}</a>
+          <!-- Start of Judge.me code --><div style='{{ jm_style }}' class='jdgm-widget jdgm-preview-badge' data-id='{{ product.id }}' data-auto-install='false'>{{ product.metafields.judgeme.badge }}</div><!-- End of Judge.me code -->
+        </h3>
+      {%- endif -%}
+      
+          {%- if section.settings.mostrar_codigodoitem -%}
+            
+            <div style="margin-top: 8px;font-size:13px;color: #b7b7b7;">
+              <span class="product-meta__sku-number">(Cód. Item {{ product.id | divided_by: 220022 }})</span> 
+              <span class="quantitysell" style="color: #3A2A2F;"> | </span>
+              <span class="quantitysell" style="color: #0086ff;">Disponível em estoque.</span>
+            </div>
+      
+          {%- endif -%}
+              
+      <div style="margin-bottom: -14px;">
+      <!-- Start Areviews Collection Rating Code -->
+      {%- if template.name == 'product' and template != 'product.quick-view' -%} 
+      <div class='areviews_header_stars'></div> 
+      {% else %}
+      <div class='areviews_product_item areviews_stars{{ product.id }}'  data-product-id='{{ product.id }}'></div>
+      {% endif %}
+      <!-- End Areviews Collection Rating Code -->
+      </div>
+
+      {%- capture product_labels -%}
+        {%- for tag in product.tags -%}
+          {%- if tag contains '__label:' -%}
+            <span class="product-label product-label--custom1">{{ tag | split: '__label:' | last }}</span>
+          {%- endif -%}
+
+          {%- if tag contains '__label1:' -%}
+            <span class="product-label product-label--custom1">{{ tag | split: '__label1:' | last }}</span>
+          {%- endif -%}
+
+          {%- if tag contains '__label2:' -%}
+            <span class="product-label product-label--custom2">{{ tag | split: '__label2:' | last }}</span>
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- if settings.show_discount -%}
+          {%- assign savings = 0 -%}
+
+          {%- if settings.discount_mode == 'percentage' -%}
+            {%- assign savings = selected_variant.compare_at_price | minus: selected_variant.price | times: 100.0 | divided_by: selected_variant.compare_at_price | round | append: '%' -%}
+          {%- else -%}
+            {%- capture savings -%}<span>{{ selected_variant.compare_at_price | minus: selected_variant.price | money_without_trailing_zeros }}</span>{%- endcapture -%}
+          {%- endif -%}
+
+          <span class="product-label product-label--on-sale" {% unless selected_variant.price < selected_variant.compare_at_price %}style="display: none"{% endunless %}>{{ 'collection.product.discount_html' | t: savings: savings }}</span>
+        {%- endif -%}
+      {%- endcapture -%}
+
+
+      {%- if section.settings.show_vendor or section.settings.show_sku -%}
+        <div class="product-meta__reference">
+          {%- if section.settings.show_vendor -%}
+            {%- assign vendor_handle = product.vendor | handle -%}
+            {%- assign collection_for_vendor = collections[vendor_handle] -%}
+
+            {%- unless collection_for_vendor.empty? -%}
+            {%- else -%}
+
+      {%- if section.settings.blackfriday -%}
+          
+           
+      {%- endif -%}
+          
+            {%- endunless -%}
+            {%- endif -%}
+          
+<!--<br>
+
+          {%- if section.settings.show_sku -%}
+         
+          <!--{% if selected_variant.barcode != blank %}
+            <span style="font-style: italic" class="product-meta__sku">
+              (Cód. Item <span class="product-meta__sku-number">{{ selected_variant.barcode }})</span>
+            </span>
+          {% endif %}-->
+                              
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.show_reviews_badge -%}
+        <a href="{% if template.name != 'product' or template == 'product.quick-view' %}{{ product.url | within: collection }}{% endif %}#product-reviews" class="product-meta__reviews-badge link" data-offset="30">
+          <span class="shopify-product-reviews-badge" data-id="{{ product.id }}">
+            {%- comment -%}Display a placeholder, to allocate space{%- endcomment -%}
+            <div class="spr-badge" style="opacity: 0">
+              <span class="spr-starrating spr-badge-starrating">
+                <i class="spr-icon spr-icon-star-empty"></i>
+                <i class="spr-icon spr-icon-star-empty"></i>
+                <i class="spr-icon spr-icon-star-empty"></i>
+                <i class="spr-icon spr-icon-star-empty"></i>
+                <i class="spr-icon spr-icon-star-empty"></i>
+              </span>
+
+              <span class="spr-badge-caption">filler</span>
+            </div>
+          </span>
+        </a>
+      {%- endif -%}
+
+      {%- if section.settings.show_share_buttons -%}
+        <div class="product-meta__share-buttons hidden-phone">
+          {{ share_buttons }}
+        </div>
+      {%- endif -%}
+    </div>
+    
+    <hr class="card__separator">
+
+    {%- if request.page_type == 'index' and section.settings.show_description and product.description != blank and section.settings.description_below_add_to_cart == false -%}
+      <div class="product-meta__description rte">
+        {{ product.description | remove: 'data-section-type="product"' }}
+      </div>
+    {%- endif -%}
+
+    {% comment %}
+    ------------------------------------------------------------------------------
+    PRODUCT FORM
+    ------------------------------------------------------------------------------
+    {% endcomment %}
+
+    {%- assign color_label = 'color,colour,couleur,cor,cores,colore,farbe,색,色,カラー,färg,farve,opção,quantidade,dias,uso,dias de tratamento' | split: ',' -%}
+
+    {%- form 'product', product, class: 'product-form' -%}
+          <div class="trustshop-review--summary" id="trustshop-review--summary"
+            rating-value="{{ product.metafields.trustshop_reviews.stars_review.value.average_review }}" 
+            rating-count="{{ product.metafields.trustshop_reviews.stars_review.value.total_review }}" >
+          </div>
+      {%- unless product.has_only_default_variant -%}
+        <div class="product-form__variants">
+          {%- for option in product.options_with_values -%}
+            {%- assign downcase_option = option.name | downcase -%}
+            {%- capture option_name -%}{{ section.id }}-{{ product.id }}-{{ forloop.index }}{%- endcapture -%}
+
+            {%- assign option_selector_type = 'select' -%}
+
+            {%- if section.settings.color_mode != 'block' and section.settings.color_mode != 'dropdown' and color_label contains downcase_option -%}
+              {%- comment -%}NOTE: even if the merchant is using the mode to display variant images, if ALL variant do not have an associated image, we fallback to color{%- endcomment -%}
+
+              {%- assign has_image_attached_to_all_variants = true -%}
+
+              {%- for variant in product.variants -%}
+                {%- unless variant.image -%}
+                  {%- assign has_image_attached_to_all_variants = false -%}
+                  {%- break -%}
+                {%- endunless -%}
+              {%- endfor -%}
+
+              {%- if section.settings.color_mode == 'color' or has_image_attached_to_all_variants == false -%}
+                {%- assign option_selector_type = 'color' -%}
+              {%- else -%}
+                {%- assign option_selector_type = 'variant' -%}
+              {%- endif -%}
+            {%- else -%}
+              {%- if color_label contains downcase_option -%}
+                {%- if section.settings.color_mode == 'block' -%}
+                  {%- assign option_selector_type = 'block' -%}
+                {%- endif -%}
+              {%- elsif section.settings.selector_mode == 'block' -%}
+                {%- assign option_selector_type = 'block' -%}
+              {%- endif -%}
+            {%- endif -%}
+
+            <div class="product-form__option" data-selector-type="{{ option_selector_type }}">
+              {%- case option_selector_type -%}
+                {%- when 'color' -%}
+                  <span class="product-form__option-name text--strong">{{ option.name }}: <span class="product-form__selected-value">{{ option.selected_value }}</span></span>
+
+                  <div class="color-swatch-list color-swatch-list--large">
+                    {%- for value in option.values -%}
+                      {%- assign downcased_value = value | downcase -%}
+                      {%- capture color_id -%}{{ option_name }}-{{ forloop.index }}{%- endcapture -%}
+
+                      {%- assign color_swatch_name = value | handle | append: '.png' -%}
+                      {%- assign color_swatch_image = images[color_swatch_name] -%}
+
+                      <div class="color-swatch {% if downcased_value == 'white' or downcased_value == 'blanc' %}color-swatch--white{% endif %}">
+                        <input class="color-swatch__radio product-form__single-selector" type="radio" name="{{ option_name }}" id="{{ color_id }}" value="{{ value | escape }}" {% if option.selected_value == value %}checked{% endif %} data-option-position="{{ option.position }}" aria-hidden="true">
+                        <label class="color-swatch__item lazyload" for="{{ color_id }}" {% if color_swatch_image != blank %}data-bg="{{ color_swatch_image | img_url: '64x64' }}"{% else %}style="background-color: {{ value | replace: ' ', '' | downcase }}"{% endif %} title="{{ value | escape }}">{% render 'icon', icon: 'cross-sold-out' %}</label>
+                      </div>
+                    {%- endfor -%}
+                  </div>
+                {%- when 'variant' -%}
+                  <span class="product-form__option-name text--strong">{{ option.name }}: <span class="product-form__selected-value">{{ option.selected_value }}</span></span>
+
+                  <div class="variant-swatch-list">
+                    {%- capture option_name -%}option{{ option.position }}{%- endcapture -%}
+
+                    {%- for value in option.values -%}
+                      {%- capture variant_swatch_id -%}{{ option_name }}-{{ forloop.index }}{%- endcapture -%}
+
+                      {%- for variant in product.variants -%}
+                        {%- if variant[option_name] == value and variant.image -%}
+                          <div class="variant-swatch">
+                            <input class="variant-swatch__radio product-form__single-selector" type="radio" name="{{ option_name }}" id="{{ variant_swatch_id }}" value="{{ value | escape }}" {% if option.selected_value == value %}checked{% endif %} data-option-position="{{ option.position }}">
+
+                            <label class="variant-swatch__item" for="{{ variant_swatch_id }}" title="{{ value | escape }}">
+                              <div class="aspect-ratio" style="padding-bottom: {{ 100.0 | divided_by: variant.image.aspect_ratio }}%">
+                                <img src="{{ variant.image | img_url: '120x' }}" alt="{{ variant.image.alt | escape }}">
+                              </div>
+
+                              {% render 'icon', icon: 'cross-sold-out' %}
+                            </label>
+                          </div>
+
+                          {%- break -%}
+                        {%- endif -%}
+                      {%- endfor -%}
+                    {%- endfor -%}
+                  </div>
+                {%- when 'block' -%}
+                  <span class="product-form__option-name text--strong">{{ option.name }}: <span class="product-form__selected-value">{{ option.selected_value }}</span></span>
+
+                  <div class="block-swatch-list">
+                    {%- for value in option.values -%}
+                      {%- capture block_swatch_id -%}{{ option_name }}-{{ forloop.index }}{%- endcapture -%}
+                      
+                      <div class="block-swatch">
+                        <input class="block-swatch__radio product-form__single-selector" type="radio" name="{{ option_name }}" id="{{ block_swatch_id }}" value="{{ value | escape }}" {% if option.selected_value == value %}checked{% endif %} data-option-position="{{ option.position }}" aria-hidden="true"><!--@sabinos799-->
+                        <label class="block-swatch__item" for="{{ block_swatch_id }}" title="{{ value | escape }}">
+                          <span class="block-swatch__item-text">{{ value }}</span>
+                        </label>
+                      </div>
+                    {%- endfor -%}
+                  </div>
+                {%- when 'select' -%}
+                  <label for="{{ option_name }}" class="product-form__option-name text--strong">{{ option.name }}: <span class="product-form__selected-value">{{ option.selected_value }}</span></label>
+
+                  <div class="select-wrapper select-wrapper--primary">
+                    {%- render 'icon', icon: 'arrow-bottom' -%}
+
+                    <select class="product-form__single-selector" name="{{ option_name }}" id="{{ option_name }}" data-option-position="{{ option.position }}">
+                      {%- for value in option.values -%}
+                        <option value="{{ value | escape }}" {% if value == option.selected_value %}selected="selected"{% endif %}>{{ value }}</option>
+                      {%- endfor -%}
+                    </select>
+                  </div>
+              {%- endcase -%}
+            </div>
+          {%- endfor -%}
+
+          <div class="no-js product-form__option">
+            <label for="product-select-{{ product.id }}">{{ 'product.form.variant' | t }}</label>
+
+            <div class="select-wrapper select-wrapper--primary">
+              <select id="product-select-{{ product.id }}" name="id">
+                {%- for variant in product.variants -%}
+                  <option {% if variant == selected_variant %}selected="selected"{% endif %} {% unless variant.available %}disabled="disabled"{% endunless %} value="{{ variant.id }}" data-sku="{{ variant.sku }}">{{ variant.title }} - {{ variant.price | money }}</option>
+                {%- endfor -%}
+              </select>
+            </div>
+          </div>
+        </div>
+      {%- else -%}
+        <input type="hidden" name="id" data-sku="{{ selected_variant.sku }}" value="{{ selected_variant.id }}">
+      {%- endunless -%}
+
+      <div class="product-form__info-list">
+        <div class="product-form__info-item">
+          <span class="product-form__info-title text--strong">{{ 'product.form.price' | t }}:</span>
+
+          <div class="product-form__info-content">
+            <div class="price-list">
+ {%- if selected_variant.compare_at_price > selected_variant.price -%}
+              <span class="price price--compare">
+                  <span class="visually-hidden">{{ 'product.general.regular_price' | t }}</span>
+                  {{- selected_variant.compare_at_price | money_without_trailing_zeros -}}
+                </span>  
+              <br>
+              <span class="price price--highlight">
+                  <span class="visually-hidden">{{ 'product.general.sale_price' | t }}</span>
+                  {{- selected_variant.price | money_without_trailing_zeros -}}
+                </span>
+				{%- assign savings = selected_variant.compare_at_price | minus: selected_variant.price | times: 100.0 | divided_by: selected_variant.compare_at_price | round | append: '%' -%}
+				<div class="discount__percentage"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrow-down" width="1.3em" height="1.3em" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" style="font-size: 15px;margin-right: -3px; margin-left: -3px;">
+               <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+               <line x1="12" y1="5" x2="12" y2="19"></line>
+               <line x1="18" y1="13" x2="12" y2="19"></line>
+               <line x1="6" y1="13" x2="12" y2="19"></line>
+               </svg>
+              		{{ savings }}
+              	</div>
+              
+              {%- else -%}
+                <span class="price--highlight">{{ selected_variant.price | money_without_trailing_zeros }}</span>
+           {%- endif -%} 
+              
+            <p style="font-size:16px;margin-bottom: 16px;top: 8px;position: relative;">Em até 12x de <span><b>{{ product.price |times: 1.2161 | divided_by: 12 | round:2 | money }}</b></span></p>
+              
+            {%- if selected_variant.compare_at_price > selected_variant.price -%}
+              <div class="product-meta__label-list">
+                <span style="margin-top: 2px; margin-bottom: 0px; font-size: 14px;" class="product-label product-label--on-sale">
+                  {{ product.compare_at_price | minus: product.price | money_without_trailing_zeros }} de desconto
+                </span>
+              </div>{%- endif -%}
+                
+           </div>
+
+            <!-- INICIO - DESCONTO PIX -->
+              
+               <span style="margin-top: 12px; padding: 6px 10px 6px 10px!important; border-radius: 21px; color: #00726F; font-size: 12px; border: 3px solid #F00726F;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="#00726F" style="height: 14px; padding-right: 6px; margin-bottom: -2px;"><path d="M242.4 292.5C247.8 287.1 257.1 287.1 262.5 292.5L339.5 369.5C353.7 383.7 372.6 391.5 392.6 391.5H407.7L310.6 488.6C280.3 518.1 231.1 518.1 200.8 488.6L103.3 391.2H112.6C132.6 391.2 151.5 383.4 165.7 369.2L242.4 292.5zM262.5 218.9C256.1 224.4 247.9 224.5 242.4 218.9L165.7 142.2C151.5 127.1 132.6 120.2 112.6 120.2H103.3L200.7 22.76C231.1-7.586 280.3-7.586 310.6 22.76L407.8 119.9H392.6C372.6 119.9 353.7 127.7 339.5 141.9L262.5 218.9zM112.6 142.7C126.4 142.7 139.1 148.3 149.7 158.1L226.4 234.8C233.6 241.1 243 245.6 252.5 245.6C261.9 245.6 271.3 241.1 278.5 234.8L355.5 157.8C365.3 148.1 378.8 142.5 392.6 142.5H430.3L488.6 200.8C518.9 231.1 518.9 280.3 488.6 310.6L430.3 368.9H392.6C378.8 368.9 365.3 363.3 355.5 353.5L278.5 276.5C264.6 262.6 240.3 262.6 226.4 276.6L149.7 353.2C139.1 363 126.4 368.6 112.6 368.6H80.78L22.76 310.6C-7.586 280.3-7.586 231.1 22.76 200.8L80.78 142.7H112.6z"/></svg>
+               <h>Compre agora até <span><b>5% OFF</b></span> no PIX</h>
+               </span>
+                    
+            <!-- FIM - DESCONTO PIX -->
+
+            <div class="product-form__price-info" style="display: {% if selected_variant.unit_price_measurement %}block{% else %}none{% endif %}">
+              <div class="unit-price-measurement">
+                <span class="unit-price-measurement__price">{{ selected_variant.unit_price | money_without_trailing_zeros }}</span>
+                <span class="unit-price-measurement__separator">/ </span>
+
+                {%- if selected_variant.unit_price_measurement.reference_value != 1 -%}
+                  <span class="unit-price-measurement__reference-value">{{ selected_variant.unit_price_measurement.reference_value }}</span>
+                {%- endif -%}
+
+                <span class="unit-price-measurement__reference-unit">{{ selected_variant.unit_price_measurement.reference_unit }}</span>
+              </div>
+            </div>
+
+            {%- if section.settings.show_taxes_included -%}
+              {%- if shop.taxes_included or shop.shipping_policy.body != blank -%}
+                <p class="product-form__price-info">
+                  {%- if shop.taxes_included -%}
+                    {{ 'product.general.include_taxes' | t }}
+                  {%- endif -%}
+
+                  {%- if shop.shipping_policy.body != blank -%}
+                    {{ 'product.general.shipping_policy_html' | t: link: shop.shipping_policy.url }}
+                  {%- endif -%}
+                </p>
+              {%- endif -%}
+            {%- endif -%}
+          </div>
+        </div>
+
+        {%- if section.settings.show_inventory_quantity and product.template_suffix != 'pre-order' -%}
+          <div class="product-form__info-item">
+            <span class="product-form__info-title text--strong">{{ 'product.form.inventory' | t }}:</span>
+
+            <div class="product-form__info-content">
+              {%- if selected_variant.available -%}
+                {%- if selected_variant.inventory_management and selected_variant.inventory_policy == 'deny' and section.settings.low_inventory_threshold > 0 -%}
+                  {%- if selected_variant.inventory_quantity <= section.settings.low_inventory_threshold -%}
+                    <span class="product-form__inventory inventory inventory--low">{{ 'product.form.low_stock_with_quantity_count' | t: count: selected_variant.inventory_quantity }}</span>
+                  {%- else -%}
+                    <span class="product-form__inventory inventory inventory--high">{{ 'product.form.in_stock_with_quantity_count' | t: count: selected_variant.inventory_quantity }}</span>
+                  {%- endif -%}
+                {%- else -%}
+                  {%- if selected_variant.inventory_policy == 'continue' and selected_variant.inventory_quantity <= 0 -%}
+                    <span class="product-form__inventory inventory inventory--high">{{ 'product.form.oversell_stock' | t }}</span>
+                  {%- else -%}
+                    <span class="product-form__inventory inventory inventory--high">{{ 'product.form.in_stock' | t }}</span>
+                  {%- endif -%}
+                {%- endif -%}
+              {%- else -%}
+                <span class="product-form__inventory inventory">{{ 'product.form.sold_out' | t }}</span>
+              {%- endif -%}
+
+              {%- for tag in product.tags -%}
+                {%- if tag contains '__stock:' -%}
+                  {%- assign stock_countdown_max = tag | split: '__stock:' | last | times: 1.0 -%}
+                  {%- assign stock_countdown_progress = selected_variant.inventory_quantity | divided_by: stock_countdown_max | times: 100.0 | at_least: 0 | at_most: 100 -%}
+
+                  <span class="inventory-bar {% if stock_countdown_progress == 0 %}inventory-bar--hidden{% endif %}" data-stock-countdown-max="{{ stock_countdown_max }}">
+                    <span class="inventory-bar__progress" style="width: 100%"></span>
+                  </span>
+                  {%- break -%}
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+        {%- if product.template_suffix != 'contact' -%}
+          {%- if section.settings.show_quantity_selector -%}
+             <div class="product-form__info-item product-form__info-item--quantity">
+              <label for="{{ section.id }}-{{ product.id }}-quantity" class="product-form__info-title text--strong">{{ 'product.form.quantity' | t }}:</label>
+
+              <div class="product-form__info-content">                               
+                <div id='myform2' class="qty-align" method='POST' action='#'>
+                  <input type='button' value='-' class='qtyminus' field='quantity' />
+                  <input type='text' name='quantity' value='1' class='qty' />
+                  <input type='button' value='+' class='qtyplus' field='quantity' />
+                </div>
+                
+              </div>
+            </div>
+          {%- else -%}
+            <input type="hidden" name="quantity" value="1">
+          {%- endif -%}
+        {%- endif -%}
+      
+      </div>
+        <!--INICIO DO FRETE OPÇÃO 01-->
+      
+<div class="fretefundo"
+ 
+        <!--CORREIOS-->
+   
+        <img style="margin: -12px 5px -10px -8px" src="//cdn.shopify.com/s/files/1/0611/1471/2252/files/correios-logo_1.svg?v=1648167047">
+       <p class="ttl-frete">{{ section.settings.titulofrete }}
+        <span class="ip-frete" id="custom-address">Carregando informações...</span></p>
+        <p class="txt-frete">Frete Grátis</p>
+
+        <!--CORREIOS-->
+
+      <script>    
+        $.getJSON( "https://wtfismyip.com/json", function(localizacao) {
+          var localizacao = localizacao['YourFuckingLocation'];
+          var regiao = localizacao.replace(", Brazil", "");
+          $("#custom-address").html("");
+      });
+      </script>
+
+      <style>
+      
+      @media (max-width: 640px) {
+        .fretefundo > img {
+           height: 52px;
+        }
+        .fretefundo > p > span {
+           font-size: 10px;
+          color: #36b376;
+
+        }
+        .fretefundo {
+           margin-top: 14px;
+        }
+       .txt-frete {
+           font-size: 12px;
+           font-weight: bold;
+           padding: 0;
+           margin: 0;
+           margin-right: -5px!important;
+          color: #36b376;
+
+        }
+      }
+
+      .fretefundo {
+         display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 9px;
+   padding: 7px 9px 6px 1px;
+    margin: 7px -1px 60px 1px;
+      }
+
+      .ttl-frete {
+           flex-grow: 1;
+           font-size: 14px;
+           line-height: 1.6;
+           margin-bottom: 3px;
+            text-align: -webkit-left;
+      }
+
+      @media (min-width: 641px){
+      .txt-frete {
+           font-size: 12px;
+           font-weight: bold;
+           padding: 0;
+           margin: 0;
+          color: #36b376;
+
+      }}
+
+      .ip-frete {
+           display: block;
+           font-weight: 400;
+          color: #36b376;
+       font-size: 12px;
+
+      }
+      
+      </style>
+   </div>
+   
+<div id="badges-product">
+    <div class="badge">
+        <svg class="badge-icon" width="20" height="16" viewBox="0 0 399.000000 399.000000">
+                        <g transform="translate(0.000000,399.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
+                            <path d="M504 3895 c-64 -33 -64 -31 -64 -468 0 -385 1 -395 21 -421 44 -56 45 -56 461 -56 367 0 384 1 416 20 45 28 68 82 53 130 -6 20 -22 47 -37 61 -25 24 -27 24 -277 29 l-252 5 80 69 c292 250 633 385 1020 403 553 25 1083 -228 1416 -677 487 -656 428 -1564 -139 -2152 -151 -157 -284 -254 -477 -348 -525 -257 -1146 -220 -1635 98 -458 297 -737 777 -766 1321 -4 66 -13 128 -21 143 -26 53 -122 77 -171 42 -47 -33 -55 -67 -48 -202 61 -1091 1021 -1913 2106 -1801 819 84 1495 686 1674 1493 217 975 -364 1960 -1324 2246 -198 58 -311 74 -545 74 -225 0 -310 -11 -495 -60 -266 -72 -543 -218 -745 -394 l-70 -61 -5 218 c-3 138 -9 225 -17 238 -32 57 -102 79 -159 50z"></path>
+                            <path d="M1460 2761 c-463 -175 -496 -189 -517 -220 l-23 -34 0 -572 0 -572 23 -34 c21 -32 53 -45 522 -222 412 -154 507 -187 540 -183 22 2 260 86 530 187 463 174 491 186 512 218 l23 35 -2 583 -3 583 -25 24 c-34 33 -999 396 -1050 395 -19 -1 -258 -85 -530 -188z m816 -162 c148 -55 285 -106 304 -113 l34 -13 -44 -16 c-25 -8 -160 -59 -300 -112 -140 -53 -262 -97 -270 -97 -22 -2 -625 225 -610 230 6 2 141 53 298 112 158 60 294 109 303 109 9 1 138 -44 285 -100z m-986 -347 c14 -6 134 -52 268 -102 133 -50 260 -98 282 -106 l40 -16 0 -403 c0 -222 -3 -406 -7 -408 -5 -2 -165 55 -358 128 l-350 131 -3 412 -2 411 52 -18 c29 -10 64 -24 78 -29z m1528 -775 c-24 -16 -693 -264 -700 -260 -5 2 -8 186 -8 408 l0 403 93 36 c50 20 211 80 357 134 l265 99 3 -406 c2 -321 0 -408 -10 -414z"></path>
+                        </g>
+                    </svg>
+        <div class="badge-text">
+            <p class="text-badge">
+                <span class="highlight-text">Devolução </span>
+                até 7 dias a partir do recebimento.
+            </p>
+        </div>
+    </div>
+
+<div class="badge">
+        <svg class="badge-icon" width="20" height="16" viewBox="0 0 434.000000 434.000000">
+                        <g transform="translate(0.000000,434.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
+                            <path d="M1900 4094 c-853 -115 -1544 -811 -1655 -1667 -127 -984 494 -1898 1456 -2142 214 -54 506 -70 733 -40 856 114 1547 806 1662 1665 7 58 14 175 14 260 0 317 -63 588 -200 862 -292 584 -853 985 -1489 1064 -143 17 -382 17 -521 -2z m570 -278 c557 -109 1012 -472 1235 -986 180 -414 180 -905 1 -1318 -90 -209 -193 -359 -356 -522 -267 -265 -581 -423 -950 -476 -149 -21 -410 -14 -551 15 -617 126 -1107 574 -1283 1171 -50 168 -60 251 -61 465 0 232 14 329 76 520 167 512 563 908 1074 1073 102 34 203 56 340 76 69 10 393 -3 475 -18z"></path>
+                            <path d="M2885 2806 c-16 -8 -241 -226 -500 -485 l-470 -471 -216 216 c-231 231 -257 249 -328 233 -21 -5 -49 -22 -68 -43 -28 -30 -33 -43 -33 -85 0 -65 16 -85 322 -387 265 -263 287 -279 359 -255 25 8 184 161 577 554 l542 543 0 49 c0 108 -92 173 -185 131z"></path>
+                        </g>
+                    </svg>
+        <div class="badge-text">
+            <p class="text-badge">
+                <span class="highlight-text"">Compra Garantida</span> ou seu dinheiro de volta.
+            </p>
+        </div>
+    </div>
+      
+   </div>
+             
+    <!--FIM FRETE OPÇÃO 01-->
+
+      <style>
+  
+  .boxParcelas .row {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+    width: 100% !important;
+    font-size: 0.9em;
+  }
+
+  .boxParcelas img.cartoes {
+    height: 22px;
+    padding: 0 4px;
+    margin: 3px 0;
+    color: #00726F;
+  }
+
+  .boxParcelas img {
+    height: 12px;
+  }
+
+  #juros {
+
+    margin-left: -5px 0;
+      color: #00726F;
+
+  }
+
+  #tabela {
+    display: flex;
+    width: 100%;
+      color: #00726F;
+  }
+
+  .divide {
+    width: 60%;
+    background: white;
+    padding: 15px;
+    display: inline-block;
+      color: #00726F;
+  }
+    .divide2 {
+    width: 40%;
+    background: white;
+    padding: 15px;
+    display: inline-block;
+      color: #00726F;
+  }
+
+  @media screen and (max-width: 996px) {
+    .boxParcelas .hideOnMobile {
+      display: flex;
+    }
+  }
+  @media (min-width: 1000px) {
+   #tabela {
+      font-size: 0.92em !important;
+    }
+    }
+
+    </style>
+
+<div class="boxParcelas" style="border: 1px solid #00726F; padding: 5px; background-color: #fff; margin-bottom: 30px; border-radius: 10px;">
+  <div class="botao" style="margin:0; border-bottom: 1px solid #00726F; padding: 5px 5px;">
+    <div class="row" style="margin: 0">
+
+      <div style="padding:0; width: 75%; text-align: left; text-decoration: none;">
+        <script>
+          $(".botao").on("click", function () {
+            $("#tabela").animate({height: 'toggle'},600);
+          });
+        </script>
+          
+      </div>
+      <div class="content" style="padding:0; cursor: pointer; width: 25%; text-align: right; padding-top: 3px;">
+
+        <span>Parcelas<svg style="width: 10px; margin: 0px 0px -2px 5px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M192 384c-8.188 0-16.38-3.125-22.62-9.375l-160-160c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0L192 306.8l137.4-137.4c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25l-160 160C208.4 380.9 200.2 384 192 384z"/></svg></span>
+
+
+
+
+      </div>
+    </div>
+  </div>
+
+  <div id="tabela" style="font-size: 0.81em; display:none">
+    <div class="divide" style="font-size: 0.95em; ">
+      <span class="rowTable font-body-table" style="color: #000000;">
+        <span style="color: #00726F;"><b>1x</b></span> de 
+        <span class="vezes1">{{ selected_variant.price | money }}</span> sem juros
+      </span>
+      <br>
+      <span class="rowTable font-body-table" style="color: #000000;">
+        <span style="color: #00726F;"><b>2x</b></span> de 
+        <span class="vezes2">{{ selected_variant.price | divided_by: 2 | times: 1.0764 | money }}</span>*
+      </span>
+      <br>
+      <span class="rowTable font-body-table" style="color: #000000;">
+        <span style="color: #00726F;"><b>3x</b></span> de 
+        <span class="vezes3">{{ selected_variant.price | divided_by: 3 | times: 1.0923 | money }}</span>*
+      </span>
+      <br>
+      <span class="rowTable font-body-table" style="color: #000000;">
+        <span style="color: #00726F;"><b>4x</b></span> de 
+        <span class="vezes4">{{ selected_variant.price | divided_by: 4 | times: 1.0759 | money }}</span>*
+      </span>
+      <br>
+      <span class="rowTable font-body-table" style="color: #000000;">
+        <span style="color: #00726F;"><b>5x</b></span> de 
+        <span class="vezes5">{{ selected_variant.price | divided_by: 5 | times: 1.0915 | money }}</span>*
+      </span>
+      <br>
+      <div>
+        <span class="rowTable font-body-table" style="color: #000000;">
+          <span style="color: #00726F;"><b>6x</b></span> de 
+          <span class="vezes6">{{ selected_variant.price | divided_by: 6 | times: 1.1072 | money }}</span>*
+        </span>
+      </div>
+     
+      <span class="juros" style="color: #000000; font-size: 0.9em;">*Com juros.</span>
+    </div>
+
+    <div class="divide2" style="font-size: 0.95em;">
+      <span class="rowTable font-body-table" style="color: #000000;">
+        <span style="color: #00726F;"><b>7x</b></span> de 
+        <span class="vezes7">{{ selected_variant.price | divided_by: 7 | times: 1.1189 | money }}</span>*
+      </span>
+      <br>
+      <span class="rowTable font-body-table" style="color: #000000;">
+        <span style="color: #00726F;"><b>8x</b></span> de 
+        <span class="vezes8">{{ selected_variant.price | divided_by: 8 | times: 1.1345 | money }}</span>*
+      </span>
+      <br>
+      <span class="rowTable font-body-table" style="color: #000000;">
+        <span style="color: #00726F;"><b>9x</b></span> de 
+        <span class="vezes9">{{ selected_variant.price | divided_by: 9 | times: 1.1544 | money }}</span>*
+      </span>
+      <br>
+      <span class="rowTable font-body-table" style="color: #000000;">
+        <span style="color: #00726F;"><b>10x</b></span> de 
+        <span class="vezes10">{{ selected_variant.price | divided_by: 10 | times: 1.1659 | money }}</span>*
+      </span>
+      <br>
+      <span class="rowTable font-body-table" style="color: #000000;">
+        <span style="color: #00726F;"><b>11x</b></span> de 
+        <span class="vezes11">{{ selected_variant.price | divided_by: 11 | times: 1.1819 | money }}</span>*
+      </span>
+      <br>
+      <span class="rowTable font-body-table" style="color: #000000;">
+        <span style="color: #00726F;"><b>12x</b></span> de 
+        <span class="vezes12">{{ selected_variant.price | divided_by: 12 | times: 1.2166 | money }}</span>*
+      </span>
+    </div>
+  </div>
+  
+  <div style="margin: 0px; display: block;  border-top: 1px solid #00726F; padding: 5px;">
+    <div class="row" style="margin: 0">
+      <div style="padding:0; width: 50%; text-align: left; text-decoration: none;">
+
+ <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 24" role="img" width="38" height="24"
+          aria-labelledby="pi-boleto">
+          <title id="pi-boleto">Boleto</title>
+          <path fill="#fff"
+            d="M35.7 23.965H2.3a2.307 2.307 0 0 1-2.3-2.3v-19.4C0 1 1.035-.035 2.3-.035h33.4c1.265 0 2.3 1.035 2.3 2.3v19.4c0 1.265-1.035 2.3-2.3 2.3z" />
+          <path fill="#000"
+            d="M35.564 23.965H2.436c-1.344 0-2.436-1.077-2.436-2.4v-19.2c0-1.323 1.092-2.4 2.436-2.4h33.128c1.344 0 2.436 1.077 2.436 2.4v19.2c0 1.323-1.092 2.4-2.436 2.4zM2.436.925c-.806 0-1.462.646-1.462 1.44v19.2c0 .794.656 1.44 1.462 1.44h33.128c.806 0 1.462-.646 1.462-1.44v-19.2c0-.794-.656-1.44-1.462-1.44H2.436z"
+            opacity=".25" />
+          <path
+            d="M8.079 4.945h.7v6.298h-.7zm-1.83 0h.7v6.298h-.7zm7.256 0h1.901v6.298h-1.901zm9.715 0h.95v6.298h-.95zm2.324 0h.95v6.298h-.95zm3.804 0h1.221v6.298h-1.221zm-1.375 0h.395v6.298h-.395zm-6.389 0h.395v6.298h-.395zm-.845 0h.395v6.298h-.395zm-2.746 0h.395v6.298h-.395zm-6.31 0h.395v6.298h-.395zm-1.163 0h.733v6.298h-.733zM6.249 19.3v-6.478H8.68c.495 0 .891.065 1.191.196.299.131.532.333.701.606.17.271.255.556.255.855 0 .276-.075.537-.225.781a1.604 1.604 0 0 1-.679.593c.392.115.694.311.903.588.211.276.317.603.317.98 0 .305-.065.587-.193.847a1.644 1.644 0 0 1-.475.603c-.189.14-.425.247-.709.32a4.328 4.328 0 0 1-1.046.109H6.248zm.86-3.755H8.51c.38 0 .653-.026.817-.075a.903.903 0 0 0 .493-.324.936.936 0 0 0 .166-.567 1.03 1.03 0 0 0-.155-.568c-.103-.164-.25-.278-.442-.338s-.52-.09-.985-.09H7.109v1.963zm0 2.995h1.614c.277 0 .472-.011.585-.032.196-.035.362-.094.495-.176a.946.946 0 0 0 .327-.362c.086-.158.128-.341.128-.547 0-.243-.062-.452-.187-.632a.978.978 0 0 0-.516-.377c-.219-.072-.535-.109-.947-.109H7.109v2.235zm4.813-1.588c0-.867.241-1.509.725-1.927.403-.347.896-.52 1.476-.52.644 0 1.172.211 1.582.633.409.421.614 1.004.614 1.748 0 .603-.09 1.077-.271 1.422a1.92 1.92 0 0 1-.792.805 2.292 2.292 0 0 1-1.132.286c-.657 0-1.188-.21-1.594-.63-.406-.421-.608-1.027-.608-1.817zm.814.002c0 .6.131 1.05.394 1.347.264.299.594.448.994.448.395 0 .724-.149.988-.449.262-.3.394-.757.394-1.371 0-.579-.133-1.018-.397-1.315a1.261 1.261 0 0 0-.985-.448c-.4 0-.73.148-.994.445-.262.297-.394.745-.394 1.344zm4.498 2.346v-6.478h.796V19.3h-.796zm5.231-1.52l.823.109c-.128.478-.368.85-.718 1.114-.35.264-.796.397-1.341.397-.685 0-1.227-.211-1.629-.633-.401-.421-.602-1.013-.602-1.775 0-.787.202-1.399.608-1.834.406-.436.932-.653 1.579-.653.626 0 1.137.213 1.534.639.397.427.596 1.027.596 1.8l-.004.211h-3.497c.03.514.175.909.437 1.182a1.3 1.3 0 0 0 .979.41c.291 0 .54-.077.745-.231.207-.154.369-.4.49-.737zm-2.606-1.276h2.615c-.035-.395-.136-.691-.3-.888a1.216 1.216 0 0 0-.983-.46c-.365 0-.671.122-.92.366-.247.244-.385.572-.412.982zm6.164 2.086l.109.703a2.951 2.951 0 0 1-.599.071c-.288 0-.511-.045-.671-.137-.158-.092-.27-.211-.335-.36s-.097-.463-.097-.941v-2.705h-.588v-.615h.588v-1.161l.796-.478v1.639h.796v.615h-.796v2.751c0 .228.014.374.042.439a.324.324 0 0 0 .136.155.53.53 0 0 0 .271.057l.347-.032zm.487-1.638c0-.867.241-1.509.725-1.927.403-.347.896-.52 1.476-.52.644 0 1.172.211 1.582.633.409.421.614 1.004.614 1.748 0 .603-.09 1.077-.271 1.422a1.92 1.92 0 0 1-.792.805 2.292 2.292 0 0 1-1.132.286c-.657 0-1.188-.21-1.594-.63-.406-.421-.608-1.027-.608-1.817zm.814.002c0 .6.131 1.05.394 1.347.264.299.594.448.994.448.395 0 .724-.149.988-.449.262-.3.394-.757.394-1.371 0-.579-.133-1.018-.397-1.315a1.261 1.261 0 0 0-.985-.448c-.4 0-.73.148-.994.445-.262.297-.394.745-.394 1.344z"
+            fill="#221F1F" />
+        </svg>
+        
+<svg xmlns="http://www.w3.org/2000/svg" width="39" height="26" viewBox="0 0 39 26" fill="none">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M39 22.75C39 24.5375 37.5375 26 35.75 26H3.25C1.4625 26 0 24.5375 0 22.75V3.25C0 1.4625 1.4625 0 3.25 0H35.75C37.5375 0 39 1.4625 39 3.25V22.75Z" fill="white"/>
+<path d="M35.75 0H3.25C1.4625 0 0 1.4625 0 3.25V22.75C0 24.5375 1.4625 26 3.25 26H35.75C37.5375 26 39 24.5375 39 22.75V3.25C39 1.4625 37.5375 0 35.75 0ZM35.75 0.65C37.1839 0.65 38.35 1.8161 38.35 3.25V22.75C38.35 24.1839 37.1839 25.35 35.75 25.35H3.25C1.8161 25.35 0.65 24.1839 0.65 22.75V3.25C0.65 1.8161 1.8161 0.65 3.25 0.65H35.75Z" fill="#B3B3B3"/>
+<path d="M16.0813 16.7106C16.3515 16.7116 16.6192 16.6588 16.8688 16.5555C17.1184 16.4521 17.3451 16.3002 17.5355 16.1085L19.6347 14.0094C19.7092 13.9384 19.8081 13.8987 19.9111 13.8987C20.014 13.8987 20.113 13.9384 20.1875 14.0094L22.2948 16.1172C22.4856 16.3086 22.7124 16.4603 22.9622 16.5635C23.2119 16.6667 23.4797 16.7194 23.7499 16.7184H24.1639L21.5037 19.3773C21.3064 19.575 21.072 19.7319 20.814 19.839C20.5559 19.946 20.2793 20.0012 20 20.0012C19.7206 20.0012 19.444 19.946 19.1859 19.839C18.9279 19.7319 18.6935 19.575 18.4962 19.3773L15.8252 16.7106H16.0813ZM23.7499 9.28252C23.4798 9.2817 23.2122 9.33446 22.9626 9.43773C22.7129 9.54101 22.4863 9.69275 22.2957 9.88419L20.1914 11.9929C20.1181 12.066 20.0187 12.1071 19.9152 12.1071C19.8116 12.1071 19.7123 12.066 19.639 11.9929L17.5399 9.89327C17.3494 9.70158 17.1228 9.54964 16.8732 9.44628C16.6235 9.34292 16.3558 9.29019 16.0856 9.29117H15.8252L18.4962 6.62279C18.8951 6.22402 19.436 6 20 6C20.564 6 21.1049 6.22402 21.5037 6.62279L24.1639 9.28208L23.7499 9.28252Z" fill="#4AB7A8"/>
+<path d="M13.6231 11.4967L15.2115 9.90798H16.0813C16.4628 9.90841 16.8283 10.0594 17.0991 10.3275L19.1982 12.4267C19.2918 12.5208 19.403 12.5954 19.5255 12.6463C19.6479 12.6973 19.7793 12.7235 19.9119 12.7235C20.0446 12.7235 20.1759 12.6973 20.2984 12.6463C20.4209 12.5954 20.5321 12.5208 20.6256 12.4267L22.733 10.3193C23.0038 10.0509 23.3695 9.90009 23.7508 9.89976H24.782L26.3772 11.495C26.776 11.8938 27 12.4347 27 12.9987C27 13.5627 26.776 14.1036 26.3772 14.5025L24.782 16.0977H23.7499C23.3689 16.0977 23.0029 15.9463 22.7321 15.6782L20.6252 13.5699C20.433 13.3863 20.1773 13.2839 19.9115 13.2839C19.6457 13.2839 19.3901 13.3863 19.1978 13.5699L17.0987 15.6691C16.8279 15.9372 16.4624 16.0886 16.0809 16.0886H15.2115L13.6231 14.5042C13.4256 14.3068 13.2689 14.0724 13.162 13.8143C13.055 13.5563 13 13.2798 13 13.0005C13 12.7212 13.055 12.4446 13.162 12.1866C13.2689 11.9286 13.4256 11.6942 13.6231 11.4967Z" fill="#4AB7A8"/>
+</svg>
+<!--  -->
+<!--          -->
+        
+<!--          -->
+        
+<!--          		-->
+
+      </div>
+      <div style="padding:0; width: 50%; text-align: right; padding-top: 3px;">
+       <div>
+         <p class="parcelament" style='color: #000000; font-size:16px'>{{ selected_variant.price | round:2 | money }}</p>
+        
+
+        
+        
+      </div>
+                
+      </div>
+    </div>
+  </div>
+
+</div>
+
+    <div id="loader" class="loader"></div>
+
+  
+      <div class="product-form__payment-container">
+        {%- if product.template_suffix != 'contact' -%}
+          {%- if selected_variant.available -%}
+            {%- if product.template_suffix == 'pre-order' -%}
+              <button type="submit" style="font-size: 19px;" type="submit" name="add" id="AddToCart" class="product-form__add-button button button--primary" data-action="add-to-cart">{{ 'product.form.pre_order' | t }}</button>
+            {%- else -%}
+              <button type="submit" style="font-size: 19px;" type="submit" name="add" id="AddToCart" class="product-form__add-button button button--primary" data-action="add-to-cart">{{ 'product.form.add_to_cart' | t }}</button>
+            {%- endif -%}
+
+            {%- if section.settings.mostrar_addtocart -%}
+              <button type="submit" style="font-size: 16px;font-weight: bold; padding:0; line-height: 60px;" class="product-form__add-button button button--primary-add" data-action="add-to-cart">Adicionar ao carrinho</button>
+              {%- endif -%}
+        
+          {%- else -%}
+            <button type="submit" class="product-form__add-button button button--disabled" disabled>{{ 'product.form.sold_out' | t }}</button>
+          {%- endif -%}
+
+          {%- if section.settings.show_payment_button -%}
+            {{ form | payment_button }}
+          {%- endif -%}
+        {%- else -%}
+          <a href="mailto:{{ shop.email }}" class="button button--primary">{{ 'product.form.contact_us' | t }}</a>
+        {%- endif -%}
+      </div>
+    {%- endform -%}
+    
+    <script>
+jQuery(window).load(function () {
+      $(".loader").fadeOut("slow"); //retire o delay quando for copiar!
+    $("#tudo_page").toggle("fast");
+});
+</script>
+    
+    {%- if section.settings.mostrar_bandeiras -%}     
+     <div class="security__payment" style="margin: -20px 0 0px;">
+      <p </i> Nós Aceitamos</p>
+    </div>
+ <div class="payment-list">
+         
+      <img class="payment-list__item2"  alt="visa" width="38" height="24" src="https://icons.yampi.me/svg/card-visa.svg">
+
+      <img class="payment-list__item2"  alt="mastercard" width="38" height="24" src="https://icons.yampi.me/svg/card-mastercard.svg "> 
+
+      <img class="payment-list__item2" alt="amex" width="38" height="24" src="https://icons.yampi.me/svg/card-amex.svg">
+   
+      <img class="payment-list__item2" alt="diners_club" width="38" height="24" src="https://icons.yampi.me/svg/card-diners.svg"> 
+
+      <img class="payment-list__item2" alt="elo" width="38" height="24" src="https://icons.yampi.me/svg/card-elo.svg">
+   
+      <img class="payment-list__item2" alt="boleto" width="38" height="24" src="https://icons.yampi.me/svg/card-billet.svg">
+   
+      <img class="payment-list__item2" alt="pix" width="38" height="24" src="https://icons.yampi.me/svg/card-pix.svg">
+
+      <img class="payment-list__item2" alt="hiper" width="38" height="24" src="https://icons.yampi.me/svg/card-hiper.svg">
+
+      <img class="payment-list__item2"  alt="aura" width="38" height="24" src="https://icons.yampi.me/svg/card-aura.svg">
+
+      <img class="payment-list__item2"  alt="discover" width="38" height="24" src="https://icons.yampi.me/svg/card-discover.svg">
+      
+      <img class="payment-list__item2"  alt="hipercard" width="38" height="24" src="https://icons.yampi.me/svg/card-hipercard.svg">
+
+                                 
+    </div>	
+
+    {%- endif -%}
+         
+    
+    {%- if request.page_type == 'index' and section.settings.show_description and product.description != blank and section.settings.description_below_add_to_cart -%}
+      <div class="product-meta__description rte">
+        {{ product.description }}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.show_share_buttons -%}
+      <div class="product-meta__share-buttons hidden-tablet-and-up">
+        <span class="text--strong">{{ 'product.general.share' | t }}</span>
+        {{ share_buttons }}
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- if section.settings.show_payment_button and product.selected_or_first_available_variant.available == false -%}
+    <style>
+      #shopify-section-{{ section.id }} .shopify-payment-button {
+        display: none;
+      }
+    </style>
+  {%- endif -%}
+
+  {% comment %}
+  
+  ------------------------------------------------------------------------------
+  Product Data. This must be outputted for all products (including home page).
+
+  IMPORTANT: THIS CODE IS VITAL. DO NOT EDIT IT NOT REMOVE IT. MAKE SURE TO KEEP
+  THE EXACT SAME ATTRIBUTES.
+  ------------------------------------------------------------------------------
+  {% endcomment %}
+  
+    <script>
+    jQuery(document).ready(function(){
+    // This button will increment the value
+    $('.qtyplus').click(function(e){
+        // Stop acting like a button
+        e.preventDefault();
+        // Get the field name
+        fieldName = $(this).attr('field');
+        // Get its current value
+        var currentVal = parseInt($('input[name='+fieldName+']').val());
+        // If is not undefined
+        if (!isNaN(currentVal)) {
+            // Increment
+            $('input[name='+fieldName+']').val(currentVal + 1);
+        } else {
+            // Otherwise put a 0 there
+            $('input[name='+fieldName+']').val(0);
+        }
+    });
+    // This button will decrement the value till 0
+    $(".qtyminus").click(function(e) {
+        // Stop acting like a button
+        e.preventDefault();
+        // Get the field name
+        fieldName = $(this).attr('field');
+        // Get its current value
+        var currentVal = parseInt($('input[name='+fieldName+']').val());
+        // If it isn't undefined or its greater than 0
+        if (!isNaN(currentVal) && currentVal > 0) {
+            // Decrement one
+            $('input[name='+fieldName+']').val(currentVal - 1);
+        } else {
+            // Otherwise put a 0 there
+            $('input[name='+fieldName+']').val(0);
+        }
+    });
+});
+
+  </script>
+
+  <script type="application/json" data-product-json>
+    {
+      "product": {{ product | json }},
+      "options_with_values": {{ product.options_with_values | json }},
+      "selected_variant_id": {{ selected_variant.id }}
+      {%- if section.settings.show_inventory_quantity -%}
+        ,"inventories": {
+          {%- for variant in product.variants -%}
+            {%- if variant.available -%}
+              {%- if variant.inventory_management and variant.inventory_policy == 'deny' and section.settings.low_inventory_threshold > 0 -%}
+                {%- if variant.inventory_quantity <= section.settings.low_inventory_threshold -%}
+                  {%- capture inventory_message -%}{{ 'product.form.low_stock_with_quantity_count' | t: count: variant.inventory_quantity }}{%- endcapture -%}
+                {%- else -%}
+                  {%- capture inventory_message -%}{{ 'product.form.in_stock_with_quantity_count' | t: count: variant.inventory_quantity }}{%- endcapture -%}
+                {%- endif -%}
+              {%- else -%}
+                {%- if variant.inventory_policy == 'continue' and variant.inventory_quantity <= 0 -%}
+                  {%- capture inventory_message -%}{{ 'product.form.oversell_stock' | t }}{%- endcapture -%}
+                {%- else %}
+                  {%- capture inventory_message -%}{{ 'product.form.in_stock' | t }}{%- endcapture -%}
+                {%- endif -%}
+              {%- endif -%}
+            {%- else -%}
+              {%- capture inventory_message -%}{{ 'product.form.sold_out' | t }}{%- endcapture -%}
+            {%- endif -%}
+
+            "{{ variant.id }}": {
+              "inventory_management": {{ variant.inventory_management | json }},
+              "inventory_policy": {{ variant.inventory_policy | json }},
+              "inventory_quantity": {{ variant.inventory_quantity | json }},
+              "inventory_message": {{ inventory_message | json }}
+            }{% unless forloop.last %},{% endunless %}
+          {%- endfor -%}
+        }
+      {%- endif -%}
+    }
+  </script>
+</div>
