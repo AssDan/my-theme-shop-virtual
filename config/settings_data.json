@@ -229,29 +229,11 @@
               "button_text": "",
               "link": ""
             }
-          },
-          "image_fCedQ6": {
-            "type": "image",
-            "settings": {
-              "image": "shopify://shop_images/Black_Friday_-_Banner_Desktop_1800_x_600.png",
-              "mobile_image": "shopify://shop_images/Black_Friday_-_Banner_Mobile_1800x800_61f879a0-c05e-4ade-9a9c-5f885eab4d48.png",
-              "show_overlay": false,
-              "overlay_opacity": 0,
-              "text_color": "#ffffff",
-              "title": "",
-              "content": "",
-              "content_position": "middle_center",
-              "button_background": "#ffffff",
-              "button_text_color": "#000000",
-              "button_text": "",
-              "link": ""
-            }
           }
         },
         "block_order": [
           "bbea030d-de91-4721-9ea1-9660f647bbd7",
-          "image_LziydK",
-          "image_fCedQ6"
+          "image_LziydK"
         ],
         "settings": {
           "edge_to_edge": false,
