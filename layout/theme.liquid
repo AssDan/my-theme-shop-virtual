@@ -180,7 +180,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     
     {{ '//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css' | stylesheet_tag }}
 
-  {% render 'opinew_head' %}
+  <script id="navegg" type="text/javascript">
+  (function(n,v,g){o="Navegg";if(!n[o]){
+    a=v.createElement('script');a.src=g;b=document.getElementsByTagName('script')[0];
+    b.parentNode.insertBefore(a,b);n[o]=n[o]||function(parms){
+    n[o].q=n[o].q||[];n[o].q.push([this, parms])};}})
+  (window, document, 'https://tag.navdmp.com/universal.min.js');
+  window.naveggReady = window.naveggReady||[];
+  window.nvg94401 = new Navegg({
+    acc: 94401
+  });
+</script>
+    
 </head>
 
   <body class="warehouse--v1 {% if settings.animation_image_zoom %}features--animate-zoom{% endif%} template-{{ request.page_type | handle }} {% if request.page_type contains '/' %}template-{{ request.page_type | split: '/' | last | handle }}{% endif %}" data-instant-intensity="viewport"><!--tema modificado pelo @sabinoss79-->  
