@@ -216,8 +216,8 @@
           "image_LziydK": {
             "type": "image",
             "settings": {
-              "image": "shopify://shop_images/Banner_Desktop_dia_07_11_1800_x_600.png",
-              "mobile_image": "shopify://shop_images/Banner_Mobile_1800x800_1.png",
+              "image": "shopify://shop_images/2_banners_1800x600_afbdd7c3-9bc6-45ed-98cd-26711aa59ee3.png",
+              "mobile_image": "shopify://shop_images/2_banners_-_1800x800Mobile_d259f427-87d6-428b-b04e-8bb0fbb1b9b7.png",
               "show_overlay": false,
               "overlay_opacity": 0,
               "text_color": "#ffffff",
