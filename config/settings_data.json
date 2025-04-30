@@ -711,7 +711,7 @@
               "button_background": "#ffffff",
               "button_text_color": "#e330ba",
               "button_text": "Ver produto",
-              "button_link": "shopify://products/original-lenovo-lp40-pro-tws-wireless-bluetooth-5-1"
+              "button_link": "shopify://products/lp40-pro-tws-wireless-bluetooth-5-1"
             }
           },
           "item_T3H4CH": {
@@ -915,11 +915,6 @@
       },
       "3311095342394728605": {
         "type": "shopify://apps/avada-seo-suite/blocks/avada-seo/15507c6e-1aa3-45d3-b698-7e175e033440",
-        "disabled": false,
-        "settings": {}
-      },
-      "12732002020968342082": {
-        "type": "shopify://apps/avada-seo-suite/blocks/avada-critical-css/15507c6e-1aa3-45d3-b698-7e175e033440",
         "disabled": false,
         "settings": {}
       },
