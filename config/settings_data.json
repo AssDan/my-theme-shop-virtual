@@ -903,11 +903,6 @@
         "disabled": false,
         "settings": {}
       },
-      "16963237191767492405": {
-        "type": "shopify://apps/whatsapp-button/blocks/app-embed-block/96d80a63-e860-4262-a001-8b82ac4d00e6",
-        "disabled": false,
-        "settings": {}
-      },
       "12948015482042402483": {
         "type": "shopify://apps/mercado-pago-antifraud-plus/blocks/embed-block/b19ea721-f94a-4308-bee5-0057c043bac5",
         "disabled": false,
@@ -949,6 +944,11 @@
       "14060646107696862457": {
         "type": "shopify://apps/judge-me-reviews/blocks/judgeme_core/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
         "disabled": false,
+        "settings": {}
+      },
+      "16963237191767492405": {
+        "type": "shopify://apps/whatsapp-button/blocks/app-embed-block/96d80a63-e860-4262-a001-8b82ac4d00e6",
+        "disabled": true,
         "settings": {}
       }
     }
